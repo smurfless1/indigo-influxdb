@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<PluginConfig>
+    <!-- You can add a SupportURL element inside here if you want a context
+         sensitive help link on the config UI - otherwise it will just link
+         to the URL specified in the AboutInformation element. -->
+    <SupportURL>http://wiki.indigodomo.com/doku.php?id=plugins:example_twisted_telnet_1</SupportURL>
+
+    <Field id="host"
+           type="textfield"
+           defaultValue="localhost"
+           tooltip="Host address">
+           <Label>Host:</Label>
+    </Field>
+    <Field id="port"
+           type="textfield"
+           defaultValue="8086"
+           tooltip="Port, default 8086">
+        <Label>Port:</Label>
+    </Field>
+    <Field id="user"
+           type="textfield"
+           defaultValue="indigo"
+           tooltip="user name for indigo posting">
+        <Label>User:</Label>
+    </Field>
+    <Field id="password"
+           type="textfield"
+           defaultValue="indigo"
+           tooltip="password for indigo posting user"
+           secure="true">
+        <Label>Password:</Label>
+    </Field>
+    <Field id="database"
+           type="textfield"
+           defaultValue="indigo"
+           tooltip="database name in influx">
+        <Label>Database:</Label>
+    </Field>
+    <Field id="debug"
+           type="checkbox">
+        <Label>Debug to Log</Label>
+        <Description>Enabled</Description>
+    </Field>
+</PluginConfig>
+

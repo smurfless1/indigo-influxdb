@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<PluginConfig>
+    <!-- You can add a SupportURL element inside here if you want a context
+         sensitive help link on the config UI - otherwise it will just link
+         to the URL specified in the AboutInformation element. -->
+    <SupportURL>http://wiki.indigodomo.com/doku.php?id=plugins:example_twisted_telnet_1</SupportURL>
+
+    <Field id="hostport"
+           type="textfield"
+           defaultValue="localhost:9092"
+           tooltip="Comma separated host:port pairs to your kafka brokers" >
+        <Label>Brokers:</Label>
+    </Field>
+    <Field id="topic"
+           type="textfield"
+           defaultValue="indigo-json"
+           tooltip="Topic name on your broker" >
+        <Label>Topic:</Label>
+    </Field>
+    <Field id="debug"
+           type="checkbox">
+        <Label>Debug to Log</Label>
+        <Description>Enabled</Description>
+    </Field>
+</PluginConfig>
