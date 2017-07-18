@@ -41,5 +41,10 @@
         <Label>Debug to Log</Label>
         <Description>Enabled</Description>
     </Field>
+    <Field id="reset"
+           type="checkbox">
+        <Label>Reset database</Label>
+        <Description>Lose all my data</Description>
+    </Field>
 </PluginConfig>
 

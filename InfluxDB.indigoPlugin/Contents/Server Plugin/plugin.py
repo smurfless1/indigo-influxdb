@@ -22,7 +22,6 @@ import time as time_
 import json
 
 from influxdb import InfluxDBClient
-from influxdb import SeriesHelper
 
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
@@ -40,7 +39,7 @@ class Plugin(indigo.PluginBase):
             password=self.password,
             database=self.database)
 
-        if False:
+        if self.pluginPrefs.get('reset', False):
             try:
                 indigo.server.log(u'dropping old')
                 self.connection.drop_database(self.database)
@@ -100,12 +99,12 @@ class Plugin(indigo.PluginBase):
 
         for key in keynames.split():
             if hasattr(origDev, key) and str(getattr(origDev, key)) != "null" and str(getattr(origDev, key)) != "None":
-                newjson[key] = str(getattr(origDev, key))
+                newjson[key] = getattr(origDev, key)
             if hasattr(newDev, key) and str(getattr(newDev, key)) != "null" and str(getattr(newDev, key)) != "None":
-                newjson[key] = str(getattr(newDev, key))
+                newjson[key] = getattr(newDev, key)
 
         for state in newDev.states:
-            newjson[state] = str(newDev.states[state])
+            newjson['state.' + state] = newDev.states[state]
 
         if self.debug:
             indigo.server.log(json.dumps(newjson).encode('ascii'))
