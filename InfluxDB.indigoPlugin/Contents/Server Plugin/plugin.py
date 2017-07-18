@@ -15,35 +15,18 @@
 # GRANT ALL PRIVILEGES TO indigo
 #
 import indigo
-
-import os
-import sys
 import time as time_
 from datetime import datetime, date
 import json
-
+from indigo_adaptor import IndigoAdaptor
 from influxdb import InfluxDBClient
-
-# explicit changes
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
-    indigo.server.log(str(obj))
-    if isinstance(obj, (datetime, date)):
-        ut = time_.mktime(obj.timetuple())
-        return int(ut)
-    if isinstance(obj, indigo.Dict):
-        dd = {}
-        for key,value in obj.iteritems():
-            dd[key] = value
-        return dd
-    raise TypeError ("Type %s not serializable" % type(obj))
 
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         super(Plugin, self).__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
         indigo.devices.subscribeToChanges()
         self.connection = None
-        self.cache = {}
+        self.adaptor = IndigoAdaptor()
 
     def connect(self):
         indigo.server.log(u'starting influx connection')
@@ -108,50 +91,15 @@ class Plugin(indigo.PluginBase):
         indigo.PluginBase.deviceUpdated(self, origDev, newDev)
 
         # custom add to influx work
-        tagnames = 'name folderId'
-        keynames = 'address batteryLevel brightness buttonGroupCount configured description deviceTypeId enabled energyCurLevel ' \
-                   'energyAccumTotal energyAccumBaseTime energyAccumTimeDelta folderId id model name onState' \
-                   'pluginId sensorValue activeZone'
-        # TODO force floats from weather plugin
-
-        attrlist = [attr for attr in dir(newDev) if attr[:2] + attr[-2:] != '____' and not callable(getattr(newDev, attr))]
-        newjson = {}
+        tagnames = 'name folderId'.split()
+        newjson = self.adaptor.diff_to_json(newDev)
         newtags = {}
-        newtags['name'] = newDev.name
-
-        for key in keynames:
-            for dev in [newDev, origDev]:
-                if hasattr(dev, key) \
-                        and str(getattr(dev, key)) != "null" \
-                        and str(getattr(dev, key)) != "None" \
-                        and key not in newjson.keys():
-                    newjson[key] = getattr(dev, key)
-
-        for state in newDev.states:
-            newjson['state.' + state] = newDev.states[state]
-
-        # strip out matching values?
-        # find or create our cache dict
-        localcache = {}
-        if newDev.name in self.cache.keys():
-            localcache = self.cache[newDev.name]
-
-        diffjson = {}
-        for kk, vv in newjson.iteritems():
-            if kk not in localcache or localcache[kk] != vv:
-                if not isinstance(vv, indigo.Dict) and not isinstance(vv, dict):
-                    diffjson[kk] = vv;
-        # always make sure these survive
-        diffjson['name'] = origDev.name;
-        diffjson['id'] = origDev.id;
-
-        self.cache[newDev.name] = newjson
+        for tag in tagnames:
+            newtags[tag] = str(getattr(newDev, tag))
 
         # use the custom encoder to make a cleaned-up string
         if self.pluginPrefs.get('debug', False):
-            indigo.server.log(json.dumps(newjson, default=json_serial).encode('ascii'))
-            indigo.server.log(u'diff:')
-            indigo.server.log(json.dumps(diffjson, default=json_serial).encode('ascii'))
+            indigo.server.log(json.dumps(newjson).encode('ascii'))
 
-        self.send(newtags, diffjson)
+        self.send(newtags, newjson)
 
