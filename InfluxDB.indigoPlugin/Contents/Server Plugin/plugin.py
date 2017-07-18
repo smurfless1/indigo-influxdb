@@ -28,6 +28,7 @@ class Plugin(indigo.PluginBase):
         super(Plugin, self).__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
         indigo.devices.subscribeToChanges()
         self.connection = None
+        self.cache = {}
 
     def connect(self):
         indigo.server.log(u'starting influx connection')
@@ -51,7 +52,7 @@ class Plugin(indigo.PluginBase):
         indigo.server.log(u'switch')
         self.connection.switch_database(self.database)
         indigo.server.log(u'retention')
-        self.connection.create_retention_policy('month_policy', '31d', '1')
+        self.connection.create_retention_policy('twoyear_policy', '730d', '1')
         indigo.server.log(u'influx connection succeeded')
 
     # send this a dict of what to write
@@ -72,7 +73,6 @@ class Plugin(indigo.PluginBase):
             self.user = self.pluginPrefs.get('user', 'indigo')
             self.password = self.pluginPrefs.get('password', 'indigo')
             self.database = self.pluginPrefs.get('database', 'indigo')
-            self.debug = self.pluginPrefs.get('debug', False)
 
             self.connect()
         except:
@@ -98,15 +98,21 @@ class Plugin(indigo.PluginBase):
         newtags['name'] = newDev.name
 
         for key in keynames.split():
-            if hasattr(origDev, key) and str(getattr(origDev, key)) != "null" and str(getattr(origDev, key)) != "None":
+            if hasattr(origDev, key) \
+                    and str(getattr(origDev, key)) != "null" \
+                    and str(getattr(origDev, key)) != "None" \
+                    and key not in newjson.keys():
                 newjson[key] = getattr(origDev, key)
-            if hasattr(newDev, key) and str(getattr(newDev, key)) != "null" and str(getattr(newDev, key)) != "None":
+            if hasattr(newDev, key) \
+                    and str(getattr(newDev, key)) != "null" \
+                    and str(getattr(newDev, key)) != "None" \
+                    and key not in newjson.keys():
                 newjson[key] = getattr(newDev, key)
 
         for state in newDev.states:
             newjson['state.' + state] = newDev.states[state]
 
-        if self.debug:
+        if self.pluginPrefs.get('debug', False):
             indigo.server.log(json.dumps(newjson).encode('ascii'))
 
         self.send(newtags, newjson)
