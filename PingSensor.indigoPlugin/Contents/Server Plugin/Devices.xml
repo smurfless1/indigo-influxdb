@@ -37,9 +37,6 @@
 			<Field id="address" type="textfield" defaultValue="127.0.0.1">
 				<Label>IP Address:</Label>
 			</Field>
-			<Field id="act_on_false" type="textfield" defaultValue="reset_modem">
-				<Label>Action Group to Run on Failed Ping</Label>
-			</Field>
 		</ConfigUI>
 		<States>
 			<!-- By default sensor type devices automatically inherit:

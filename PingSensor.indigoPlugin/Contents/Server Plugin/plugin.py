@@ -44,9 +44,6 @@ class Plugin(indigo.PluginBase):
                     # entire runConcurrentThread() method can be deleted.
                     if dev.deviceTypeId == u"pingType":
                         # this depends on the system command ping
-                        if (not hasattr(dev, 'address')):
-                            indigo.server.log('address not set this way')
-                            continue
                         response = Popen(['/sbin/ping', '-c', '1', str(dev.address)], stdout=PIPE, stderr=STDOUT)
                         stdout, nothing = response.communicate()
                         success = (response.returncode == 0)
