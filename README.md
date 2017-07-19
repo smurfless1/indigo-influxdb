@@ -7,10 +7,25 @@ Before starting
 ---
 
 * Install/license Indigo 7
-* Install homebrew
+
+
+Configure Indigo
+---
+
+* Download InfluxDB and/or Kafka Producer modules
+* Run the script install_python_modules.sh and restart the Indigo server process.  THIS REALLY HAS TO BE DONE BEFORE INSTALLING THE PLUGINS.  Stop and restart the indigo server from the UI so it can learn about the new modules.  I hate this step, but there you go. 
+* Install the module(s) by double-clicking. They are independent, pick the one you want.
+* Configure the hostname/user/pass/ports etc. For me the defaults for the local system are already set.
+* go get a drink, turning switches on and off along the way, setting off motion sensors, opening doors, and generally being disruptive. 
+
+But I don't have Influx or Grafana
+---
+
+There are lots of ways to make it work. Luckily homebrew is awesome for the rest of us. 
+
+* Install homebrew : https://brew.sh
 
 ```
-brew update
 # use https://github.com/Homebrew/homebrew-services
 brew tap homebrew/services
 ```
@@ -38,13 +53,11 @@ GRANT ALL PRIVILEGES TO indigo
 EOF
 ```
 
-Alternate syntax: 
+Alternate syntax - but if you use this, you don't need my help: 
 
 ```
 curl -G http://localhost:8086/query --data-urlencode "q=CREATE DATABASE mydb"
 ```
-
-
 
 Check the installation:
 
@@ -52,18 +65,7 @@ Check the installation:
 alias indigoinflux="influx -host localhost -port 8086 -username indigo -password indigo" -database indigo
 indigoinflux -execute 'select * from device_changes'
 # no error, no output - after all, I just created it
-```
 
-Configure Indigo
----
-
-* Download InfluxDB and/or Kafka Producer modules
-* Run the script install_python_modules.sh and restart the Indigo server process.  THIS REALLY HAS TO BE DONE BEFORE INSTALLING THE PLUGINS.  Stop and restart the indigo server from the UI so it can learn about the new modules.  I hate this step, but there you go. 
-* Install the module(s) by double-clicking. They are independent, pick the one you want.
-* Configure the hostname/user/pass/ports etc. For me the defaults for the local system are already set.
-* go get a drink, turning switches on and off along the way, setting off motion sensors, opening doors, and generally being disruptive. 
-
-```
 indigoinflux -execute 'select * from device_changes' | wc -l
 ```
 
