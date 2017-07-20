@@ -27,6 +27,7 @@ class Plugin(indigo.PluginBase):
         indigo.devices.subscribeToChanges()
         self.connection = None
         self.adaptor = IndigoAdaptor()
+        self.folders = {}
 
     def connect(self):
         indigo.server.log(u'starting influx connection')
@@ -91,13 +92,20 @@ class Plugin(indigo.PluginBase):
         indigo.PluginBase.deviceUpdated(self, origDev, newDev)
 
         # custom add to influx work
+        # tag by folder if present
         tagnames = 'name folderId'.split()
         newjson = self.adaptor.diff_to_json(newDev)
+
         newtags = {}
         for tag in tagnames:
             newtags[tag] = str(getattr(newDev, tag))
 
-        # use the custom encoder to make a cleaned-up string
+        # add a folder name tag
+        if hasattr(newDev, 'folderId') and newDev.folderId != 0:
+            indigo.server.log(newDev.name)
+            indigo.server.log(str(newDev.folderId))
+            newtags['folder'] = indigo.devices.folders[newDev.folderId].name
+
         if self.pluginPrefs.get('debug', False):
             indigo.server.log(json.dumps(newjson).encode('ascii'))
 
