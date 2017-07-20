@@ -102,8 +102,6 @@ class Plugin(indigo.PluginBase):
 
         # add a folder name tag
         if hasattr(newDev, 'folderId') and newDev.folderId != 0:
-            indigo.server.log(newDev.name)
-            indigo.server.log(str(newDev.folderId))
             newtags['folder'] = indigo.devices.folders[newDev.folderId].name
 
         if self.pluginPrefs.get('debug', False):
