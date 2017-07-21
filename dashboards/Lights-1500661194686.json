@@ -1,0 +1,438 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_INDIGO",
+      "label": "indigo",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "4.4.1"
+    },
+    {
+      "type": "datasource",
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "natel-discrete-panel",
+      "name": "Discrete",
+      "version": "0.0.5"
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "hideControls": false,
+  "id": null,
+  "links": [],
+  "refresh": false,
+  "rows": [
+    {
+      "collapse": false,
+      "height": 227,
+      "panels": [
+        {
+          "backgroundColor": "#777",
+          "colorMaps": [
+            {
+              "color": "#CCC",
+              "text": "N/A"
+            },
+            {
+              "color": "#EEE",
+              "text": "on"
+            },
+            {
+              "color": "#777",
+              "text": "off"
+            },
+            {
+              "color": "#777",
+              "text": "false"
+            },
+            {
+              "color": "#eee",
+              "text": "true"
+            }
+          ],
+          "datasource": "${DS_INDIGO}",
+          "expandFromQueryS": 0,
+          "height": "30",
+          "hideTimeOverride": false,
+          "highlightOnMouseover": false,
+          "id": 8,
+          "interval": "",
+          "legendSortBy": "-ms",
+          "lineColor": "#777",
+          "links": [],
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "metricNameColor": "#000000",
+          "minSpan": 12,
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "rowHeight": 12,
+          "showDistinctCount": false,
+          "showLegend": true,
+          "showLegendCounts": true,
+          "showLegendNames": true,
+          "showLegendPercent": true,
+          "showLegendTime": true,
+          "showLegendValues": true,
+          "showTransitionCount": false,
+          "span": 12,
+          "targets": [
+            {
+              "alias": "$tag_name",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "name"
+                  ],
+                  "type": "field"
+                }
+              ],
+              "measurement": "device_changes",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "SELECT \"state.onOffState\" FROM \"device_changes\" WHERE \"folder\" =~ /^$folder$/ AND $timeFilter GROUP BY \"name\"",
+              "rawQuery": false,
+              "refId": "C",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "state.onOffState"
+                    ],
+                    "type": "field"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "name",
+                  "operator": "=~",
+                  "value": "/^$foldermembers$/"
+                }
+              ]
+            }
+          ],
+          "textSize": 9,
+          "title": "On/Off states",
+          "transparent": true,
+          "type": "natel-discrete-panel",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            },
+            {
+              "op": "=",
+              "text": "on",
+              "value": "true"
+            },
+            {
+              "op": "=",
+              "text": "off",
+              "value": "false"
+            }
+          ],
+          "valueTextColor": "#000000",
+          "writeAllValues": false,
+          "writeLastValue": false,
+          "writeMetricNames": true
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 137,
+      "panels": [
+        {
+          "backgroundColor": "rgba(128, 128, 128, 0.1)",
+          "colorMaps": [
+            {
+              "color": "#454",
+              "text": "N/A"
+            },
+            {
+              "color": "#454",
+              "text": "1"
+            },
+            {
+              "color": "#cc3900",
+              "text": "0"
+            },
+            {
+              "color": "#454",
+              "text": "true"
+            },
+            {
+              "color": "#cc3900",
+              "text": "false"
+            }
+          ],
+          "height": "50",
+          "highlightOnMouseover": false,
+          "id": 4,
+          "legendSortBy": "-ms",
+          "lineColor": "rgba(128, 128, 128, 1.0)",
+          "links": [],
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "metricNameColor": "#000000",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "rowHeight": 15,
+          "showDistinctCount": false,
+          "showLegend": false,
+          "showLegendCounts": false,
+          "showLegendNames": true,
+          "showLegendPercent": false,
+          "showLegendValues": false,
+          "showTransitionCount": false,
+          "span": 12,
+          "targets": [
+            {
+              "alias": "$tag_name",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "name"
+                  ],
+                  "type": "tag"
+                }
+              ],
+              "measurement": "device_changes",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "state.state.closed"
+                    ],
+                    "type": "field"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "folder",
+                  "operator": "=",
+                  "value": "Sensors"
+                }
+              ]
+            },
+            {
+              "alias": "Garage",
+              "dsType": "influxdb",
+              "groupBy": [],
+              "measurement": "device_changes",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "refId": "F",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "state.binaryInput1"
+                    ],
+                    "type": "field"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "alias": "$tag_name",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "name"
+                  ],
+                  "type": "tag"
+                }
+              ],
+              "measurement": "device_changes",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "refId": "B",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "state.state.closed"
+                    ],
+                    "type": "field"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "folder",
+                  "operator": "=",
+                  "value": "Security"
+                }
+              ]
+            }
+          ],
+          "textSize": 12,
+          "title": "Security openings",
+          "transparent": false,
+          "type": "natel-discrete-panel",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueTextColor": "#000000",
+          "writeAllValues": false,
+          "writeLastValue": false,
+          "writeMetricNames": true
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
+    }
+  ],
+  "schemaVersion": 14,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_INDIGO}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Folder",
+        "multi": true,
+        "name": "folder",
+        "options": [],
+        "query": "show tag values with key = \"folder\"",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_INDIGO}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Names in this Folder",
+        "multi": true,
+        "name": "foldermembers",
+        "options": [],
+        "query": "show tag values with key = \"name\" where \"folder\" =~ /$folder/",
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "2017-07-21T00:46:00.817Z",
+    "to": "2017-07-21T00:46:56.438Z"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "",
+  "title": "Lights",
+  "version": 7
+}
