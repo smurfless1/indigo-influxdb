@@ -7,7 +7,7 @@ from enum import Enum
 # explicit changes
 def indigo_json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
-    #indigo.server.log(str(obj))
+    #indigo.server.log(unicode(obj))
     if isinstance(obj, (datetime, date)):
         ut = time_.mktime(obj.timetuple())
         return int(ut)
@@ -53,8 +53,8 @@ class IndigoAdaptor():
     # possible
     def smart_value(self, invalue):
         value = None
-        if str(invalue) != "null" \
-            and str(invalue) != "None" \
+        if unicode(invalue) != "null" \
+            and unicode(invalue) != "None" \
             and not isinstance(invalue, indigo.List) \
             and not isinstance(invalue, list) \
             and not isinstance(invalue, indigo.Dict) \
@@ -72,7 +72,7 @@ class IndigoAdaptor():
                 # explicitly change enum values to strings
                 # TODO find a more reliable way to change enums to strings
                 elif invalue.__class__.__bases__[0].__name__ == 'enum':
-                    value = str(invalue)
+                    value = unicode(invalue)
             except ValueError:
                 pass
         return value
@@ -99,11 +99,11 @@ class IndigoAdaptor():
 
         for key in newjson.keys():
             if newjson[key].__class__.__name__.startswith('k'):
-                newjson[key] = str(newjson[key])
+                newjson[key] = unicode(newjson[key])
 
         for key in 'displayStateValRaw displayStateValUi displayStateImageSel protocol'.split():
             if key in newjson.keys():
-                newjson[key] = str(newjson[key])
+                newjson[key] = unicode(newjson[key])
 
         for state in device.states:
             if self.smart_value(device.states[state]) != None:
@@ -124,20 +124,20 @@ class IndigoAdaptor():
         for kk, vv in newjson.iteritems():
             if kk not in localcache or localcache[kk] != vv:
                 if not isinstance(vv, indigo.Dict) and not isinstance(vv, dict):
-                    diffjson[kk] = vv;
+                    diffjson[kk] = vv
 
         if not device.name in self.cache.keys():
             self.cache[device.name] = {}
         self.cache[device.name].update(newjson)
 
         # always make sure these survive
-        diffjson['name'] = device.name;
-        diffjson['id'] = device.id;
+        diffjson['name'] = device.name
+        diffjson['id'] = device.id
 
         if self.debug:
-            indigo.server.log(json.dumps(newjson, default=indigo_json_serial).encode('ascii'))
+            indigo.server.log(json.dumps(newjson, default=indigo_json_serial).encode('utf-8'))
             indigo.server.log(u'diff:')
-            indigo.server.log(json.dumps(diffjson, default=indigo_json_serial).encode('ascii'))
+            indigo.server.log(json.dumps(diffjson, default=indigo_json_serial).encode('utf-8'))
 
         return diffjson
 

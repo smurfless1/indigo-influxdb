@@ -67,7 +67,7 @@ class Plugin(indigo.PluginBase):
             self.connection.write_points(json_body)
         except Exception as e:
             indigo.server.log("InfluxDB write error:")
-            indigo.server.log(str(e))
+            indigo.server.log(unicode(e))
 
 
     def startup(self):
@@ -98,14 +98,14 @@ class Plugin(indigo.PluginBase):
 
         newtags = {}
         for tag in tagnames:
-            newtags[tag] = str(getattr(newDev, tag))
+            newtags[tag] = unicode(getattr(newDev, tag))
 
         # add a folder name tag
         if hasattr(newDev, 'folderId') and newDev.folderId != 0:
             newtags['folder'] = indigo.devices.folders[newDev.folderId].name
 
         if self.pluginPrefs.get('debug', False):
-            indigo.server.log(json.dumps(newjson).encode('ascii'))
+            indigo.server.log(json.dumps(newjson).encode('utf-8'))
 
         self.send(newtags, newjson)
 
