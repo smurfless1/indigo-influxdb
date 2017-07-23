@@ -25,23 +25,7 @@ class IndigoAdaptor():
     def __init__(self):
         self.debug = False
         # Class Properties on http://wiki.indigodomo.com/doku.php?id=indigo_7_documentation:device_class
-        self.keynames = 'address description deviceTypeId ' \
-                   'energyAccumBaseTime model name ' \
-                   'pluginId'.split()
-        self.intkeys = 'activeZone zoneCount pausedScheduleZone pausedScheduleRemainingZoneDuration batteryLevel brightness ' \
-                  'brightnessLevel buttonGroupCount energyAccumTimeDelta folderId id speedIndex speedIndexCount ' \
-                  'humiditySensorCount temperatureSensorCount'.split()
-        self.floatkeys = 'energyCurLevel energyAccumTotal sensorValue coolSetpoint heatSetpoint ' \
-                'humidityInput1 humidityInput2 humidityInput3 ' \
-                'temperatureInput1 temperatureInput2 temperatureInput3 setpointCool setpointHeat'.split()
-        self.boolkeys = 'configured enabled onState onOffState remoteDisplay speedLevel zone1 zone2 zone3 zone4 zone5 zone6 ' \
-                   'coolIsOn dehumidifierIsOn fanIsOn heatIsOn humidifierIsOn'.split()
-        self.datekeys = ['lastChanged']
-        self.dictkeys = 'globalProps ownerProps pluginProps states'.split()
-        self.floatlists = 'temperatures humidities'.split()
-
-        for somelist in [self.intkeys, self.floatkeys, self.boolkeys, self.datekeys]:
-            self.keynames.extend(somelist)
+        self.stringonly = 'displayStateValRaw displayStateValUi displayStateImageSel protocol'.split()
 
         # have the json serializer always use this
         json.JSONEncoder.default = indigo_json_serial
@@ -51,29 +35,38 @@ class IndigoAdaptor():
 
     # returns None or a value, trying to convert strings to floats where
     # possible
-    def smart_value(self, invalue):
+    def smart_value(self, invalue, mknumbers=False):
         value = None
-        if unicode(invalue) != "null" \
-            and unicode(invalue) != "None" \
+        if unicode(invalue) != u"null" \
+            and unicode(invalue) != u"None" \
             and not isinstance(invalue, indigo.List) \
             and not isinstance(invalue, list) \
             and not isinstance(invalue, indigo.Dict) \
             and not isinstance(invalue, dict):
             value = invalue
             try:
+                if mknumbers:
+                    # early exit if we want a number but already have one
+                    if isinstance(invalue, int) or isinstance(invalue, float):
+                        return None
+                    elif isinstance(invalue, (datetime, date)):
+                        return None
+                    # if we have a string, but it really is a number,
+                    # MAKE IT A NUMBER IDIOTS
+                    elif isinstance(invalue, basestring):
+                        value = float(invalue)
                 # convert datetime to timestamps of another flavor
-                if isinstance(invalue, (datetime, date)):
+                elif isinstance(invalue, (datetime, date)):
                     ut = time_.mktime(invalue.timetuple())
                     value = int(ut)
-                # if we have a string, but it really is a number,
-                # MAKE IT A NUMBER IDIOTS
-                elif isinstance(invalue, basestring):
-                    value = float(invalue)
                 # explicitly change enum values to strings
                 # TODO find a more reliable way to change enums to strings
                 elif invalue.__class__.__bases__[0].__name__ == 'enum':
                     value = unicode(invalue)
             except ValueError:
+                if mknumbers:
+                    # if we were trying to force numbers but couldn't
+                    value = None
                 pass
         return value
 
@@ -86,9 +79,16 @@ class IndigoAdaptor():
         for key in attrlist:
             #import pdb; pdb.set_trace()
             if hasattr(device, key) \
-                and key not in newjson.keys() \
-                and self.smart_value(getattr(device, key)) != None:
-                newjson[key] = self.smart_value(getattr(device, key))
+                and key not in newjson.keys():
+                val = self.smart_value(getattr(device, key), False);
+                # some things change types - define the original name as original type, key.num as numeric
+                if val != None:
+                    newjson[key] = val
+                if key in self.stringonly:
+                    continue
+                val = self.smart_value(getattr(device, key), True);
+                if val != None:
+                    newjson[key + '.num'] = val
 
         # trouble areas
         # dicts end enums will not upload without a little abuse
@@ -101,13 +101,19 @@ class IndigoAdaptor():
             if newjson[key].__class__.__name__.startswith('k'):
                 newjson[key] = unicode(newjson[key])
 
-        for key in 'displayStateValRaw displayStateValUi displayStateImageSel protocol'.split():
+        for key in self.stringonly:
             if key in newjson.keys():
                 newjson[key] = unicode(newjson[key])
 
         for state in device.states:
-            if self.smart_value(device.states[state]) != None:
-                newjson['state.' + state] = self.smart_value(device.states[state])
+            val = self.smart_value(device.states[state], False);
+            if val != None:
+                newjson['state.' + state] = val
+            if state in self.stringonly:
+                continue
+            val = self.smart_value(device.states[state], True);
+            if val != None:
+                newjson['state.' + state + '.num'] = val
 
         return newjson
 
