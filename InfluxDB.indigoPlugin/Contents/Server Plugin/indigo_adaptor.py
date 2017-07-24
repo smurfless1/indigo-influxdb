@@ -117,9 +117,9 @@ class IndigoAdaptor():
 
         # Try to tell the caller what kind of measurement this is
         if u'setpointHeat' in device.states.keys():
-            newjson[u'measurement'] = u'thermostat_updates'
+            newjson[u'measurement'] = u'thermostat_changes'
         elif device.model == u'Weather Station':
-            newjson[u'measurement'] = u'weather_updates'
+            newjson[u'measurement'] = u'weather_changes'
         else:
             newjson[u'measurement'] = u'device_changes'
 
