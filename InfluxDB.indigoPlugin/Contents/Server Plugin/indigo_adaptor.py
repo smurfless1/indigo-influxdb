@@ -75,7 +75,7 @@ class IndigoAdaptor():
                     attr[:2] + attr[-2:] != '____' and not callable(getattr(device, attr))]
         #indigo.server.log(device.name + ' ' + ' '.join(attrlist))
         newjson = {}
-        newjson['name'] = device.name
+        newjson[u'name'] = unicode(device.name)
         for key in attrlist:
             #import pdb; pdb.set_trace()
             if hasattr(device, key) \
@@ -108,12 +108,20 @@ class IndigoAdaptor():
         for state in device.states:
             val = self.smart_value(device.states[state], False);
             if val != None:
-                newjson['state.' + state] = val
+                newjson[unicode('state.' + state)] = val
             if state in self.stringonly:
                 continue
             val = self.smart_value(device.states[state], True);
             if val != None:
-                newjson['state.' + state + '.num'] = val
+                newjson[unicode('state.' + state + '.num')] = val
+
+        # Try to tell the caller what kind of measurement this is
+        if u'setpointHeat' in device.states.keys():
+            newjson[u'measurement'] = u'thermostat_updates'
+        elif device.model == u'Weather Station':
+            newjson[u'measurement'] = u'weather_updates'
+        else:
+            newjson[u'measurement'] = u'device_changes'
 
         return newjson
 
@@ -139,6 +147,7 @@ class IndigoAdaptor():
         # always make sure these survive
         diffjson['name'] = device.name
         diffjson['id'] = device.id
+        diffjson[u'measurement'] = newjson[u'measurement']
 
         if self.debug:
             indigo.server.log(json.dumps(newjson, default=indigo_json_serial).encode('utf-8'))

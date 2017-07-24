@@ -25,12 +25,13 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         super(Plugin, self).__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
         indigo.devices.subscribeToChanges()
+        indigo.variables.subscribeToChanges()
         self.connection = None
         self.adaptor = IndigoAdaptor()
         self.folders = {}
 
     def connect(self):
-        indigo.server.log(u'starting influx connection')
+        indigo.server.log(u'Starting influx connection')
 
         self.connection = InfluxDBClient(
             host=self.host,
@@ -46,29 +47,30 @@ class Plugin(indigo.PluginBase):
             except:
                 pass
 
-        indigo.server.log(u'create')
+        indigo.server.log(u'Connecting...')
         self.connection.create_database(self.database)
-        indigo.server.log(u'switch')
         self.connection.switch_database(self.database)
-        indigo.server.log(u'retention')
         self.connection.create_retention_policy('two_year_policy', '730d', '1')
-        indigo.server.log(u'influx connection succeeded')
+        indigo.server.log(u'Influx connection succeeded')
 
     # send this a dict of what to write
-    def send(self, tags, what):
+    def send(self, tags, what, measurement='device_changes'):
         json_body=[
             {
-                'measurement': 'device_changes',
+                'measurement': measurement,
                 'tags' : tags,
                 'fields':  what
             }
         ]
+
+        if self.pluginPrefs.get(u'debug', False):
+            indigo.server.log(json.dumps(json_body).encode('utf-8'))
+
         try:
             self.connection.write_points(json_body)
         except Exception as e:
             indigo.server.log("InfluxDB write error:")
             indigo.server.log(unicode(e))
-
 
     def startup(self):
         try:
@@ -93,7 +95,7 @@ class Plugin(indigo.PluginBase):
 
         # custom add to influx work
         # tag by folder if present
-        tagnames = 'name folderId'.split()
+        tagnames = u'name folderId'.split()
         newjson = self.adaptor.diff_to_json(newDev)
 
         newtags = {}
@@ -101,11 +103,18 @@ class Plugin(indigo.PluginBase):
             newtags[tag] = unicode(getattr(newDev, tag))
 
         # add a folder name tag
-        if hasattr(newDev, 'folderId') and newDev.folderId != 0:
-            newtags['folder'] = indigo.devices.folders[newDev.folderId].name
+        if hasattr(newDev, u'folderId') and newDev.folderId != 0:
+            newtags[u'folder'] = indigo.devices.folders[newDev.folderId].name
 
-        if self.pluginPrefs.get('debug', False):
-            indigo.server.log(json.dumps(newjson).encode('utf-8'))
+        measurement = newjson[u'measurement']
+        del newjson[u'measurement']
+        self.send(tags=newtags, what=newjson, measurement=measurement)
 
-        self.send(newtags, newjson)
+    def variableUpdated(self, origVar, newVar):
+        indigo.PluginBase.variableUpdated(self, origVar, newVar)
+
+        newtags = {u'varname': newVar.name}
+        newjson = {u'name': newVar.name, u'value': newVar.value }
+
+        self.send(tags=newtags, what=newjson, measurement=u'variable_changes')
 
