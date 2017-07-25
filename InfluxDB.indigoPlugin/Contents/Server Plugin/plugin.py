@@ -20,6 +20,7 @@ from datetime import datetime, date
 import json
 from indigo_adaptor import IndigoAdaptor
 from influxdb import InfluxDBClient
+from influxdb.exceptions import InfluxDBClientError
 
 class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
@@ -66,11 +67,39 @@ class Plugin(indigo.PluginBase):
         if self.pluginPrefs.get(u'debug', False):
             indigo.server.log(json.dumps(json_body).encode('utf-8'))
 
-        try:
-            self.connection.write_points(json_body)
-        except Exception as e:
-            indigo.server.log("InfluxDB write error:")
-            indigo.server.log(unicode(e))
+        # don't like my types? ok, fine, what DO you want?
+        retrylimit = 30
+        unsent = True
+        while unsent and retrylimit > 0:
+            retrylimit -= 1
+            try:
+                self.connection.write_points(json_body)
+                unsent = False
+            except InfluxDBClientError as e:
+                #print(str(e))
+                field = json.loads(e.content)['error'].split('"')[1]
+                #measurement = json.loads(e.content)['error'].split('"')[3]
+                retry = json.loads(e.content)['error'].split('"')[4].split()[7]
+                if retry == 'integer':
+                    retry = 'int'
+                if retry == 'string':
+                    retry = 'str'
+                # float is already float
+                # now we know to try to force this field to this type forever more
+                self.adaptor.typecache['field'] = retry
+
+                newcode = '%s(%s)' % (retry, str(json_body[0]['fields'][field]))
+                #print(newcode)
+                json_body[0]['fields'][field] = eval(newcode)
+            except ValueError:
+                if self.pluginPrefs.get(u'debug', False):
+                    indigo.server.log(u'Unable to force a field to the type in Influx - a partial record was still written')
+            except Exception as e:
+                indigo.server.log("Error while trying to write:")
+                indigo.server.log(unicode(e))
+        if retrylimit == 0 and unsent:
+            if self.pluginPrefs.get(u'debug', False):
+                indigo.server.log(u'Unable to force all fields to the types in Influx - a partial record was still written')
 
     def startup(self):
         try:
@@ -115,6 +144,9 @@ class Plugin(indigo.PluginBase):
 
         newtags = {u'varname': newVar.name}
         newjson = {u'name': newVar.name, u'value': newVar.value }
+        numval = self.adaptor.smart_value(newVar.value, True)
+        if numval != None:
+            newjson[u'value.num'] = numval
 
         self.send(tags=newtags, what=newjson, measurement=u'variable_changes')
 

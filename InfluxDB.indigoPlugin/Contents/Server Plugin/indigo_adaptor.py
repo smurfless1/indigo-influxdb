@@ -32,6 +32,8 @@ class IndigoAdaptor():
 
         # remember previous states for diffing, smaller databases
         self.cache = {}
+        # remember column name/type mappings to reduce exceptions
+        self.typecache = {}
 
     # returns None or a value, trying to convert strings to floats where
     # possible
@@ -47,18 +49,26 @@ class IndigoAdaptor():
             try:
                 if mknumbers:
                     # early exit if we want a number but already have one
-                    if isinstance(invalue, int) or isinstance(invalue, float):
-                        return None
+                    if isinstance(invalue, float):
+                        value = None
                     elif isinstance(invalue, (datetime, date)):
-                        return None
+                        value = None
                     # if we have a string, but it really is a number,
                     # MAKE IT A NUMBER IDIOTS
                     elif isinstance(invalue, basestring):
                         value = float(invalue)
+                    elif isinstance(invalue, int):
+                        value = float(invalue)
+                elif isinstance(invalue, bool):
+                    # bypass for bools - getting casted as ints
+                    value = bool(invalue)
+                elif isinstance(invalue, int):
+                    # convert ALL numbers to floats for influx
+                    value = float(invalue)
                 # convert datetime to timestamps of another flavor
                 elif isinstance(invalue, (datetime, date)):
-                    ut = time_.mktime(invalue.timetuple())
-                    value = int(ut)
+                    value = time_.mktime(invalue.timetuple())
+                    #value = int(ut)
                 # explicitly change enum values to strings
                 # TODO find a more reliable way to change enums to strings
                 elif invalue.__class__.__bases__[0].__name__ == 'enum':
@@ -123,6 +133,11 @@ class IndigoAdaptor():
         else:
             newjson[u'measurement'] = u'device_changes'
 
+        # try to honor previous complaints about column types
+        for key in self.typecache.keys():
+            if key in newjson.keys():
+                newjson[key] = eval( '%s(%s)' % (self.typecache[key], str(newjson[key])))
+
         return newjson
 
     def diff_to_json(self, device):
@@ -146,7 +161,7 @@ class IndigoAdaptor():
 
         # always make sure these survive
         diffjson['name'] = device.name
-        diffjson['id'] = device.id
+        diffjson['id'] = float(device.id)
         diffjson[u'measurement'] = newjson[u'measurement']
 
         if self.debug:
