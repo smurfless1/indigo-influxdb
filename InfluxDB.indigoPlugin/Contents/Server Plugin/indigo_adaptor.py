@@ -97,7 +97,7 @@ class IndigoAdaptor():
                 if key in self.stringonly:
                     continue
                 val = self.smart_value(getattr(device, key), True);
-                if val != None:
+                if val is not None:
                     newjson[key + '.num'] = val
 
         # trouble areas
