@@ -1,7 +1,7 @@
 Indigo Plug-Ins for InfluxDB and Kafka
 ---
 
-Early draft Indigo Plug-Ins for writing JSON to InfluxDB and Apache Kafka topics. 
+Indigo Plug-In for writing JSON to InfluxDB 
 
 Before starting
 ---
@@ -12,9 +12,9 @@ Before starting
 Configure Indigo
 ---
 
-* Download InfluxDB and/or Kafka Producer modules
-* Run the script install_python_modules.sh and restart the Indigo server process.  THIS REALLY HAS TO BE DONE BEFORE INSTALLING THE PLUGINS.  Stop and restart the indigo server from the UI so it can learn about the new modules.  I hate this step, but there you go. 
-* Install the module(s) by double-clicking. They are independent, pick the one you want.
+* Download the InfluxDB Plugin directory
+* Run the script install_python_modules.sh from Terminal and restart the Indigo server process.  THIS REALLY HAS TO BE DONE BEFORE INSTALLING THE PLUGIN.  Stop and restart the indigo server from the UI so it can learn about the new modules.  I hate this step, but there you go. 
+* Install the plugin by double-clicking.
 * Configure the hostname/user/pass/ports etc. For me the defaults for the local system are already set.
 * go get a drink, turning switches on and off along the way, setting off motion sensors, opening doors, and generally being disruptive. 
 
@@ -53,23 +53,17 @@ GRANT ALL PRIVILEGES TO indigo
 EOF
 ```
 
-Alternate syntax - but if you use this, you don't need my help: 
-
-```
-curl -G http://localhost:8086/query --data-urlencode "q=CREATE DATABASE mydb"
-```
-
 Check the installation:
 
 ```
-alias indigoinflux="influx -host localhost -port 8086 -username indigo -password indigo" -database indigo
+alias indigoinflux="influx -host localhost -port 8086 -username indigo -password indigo -database indigo"
 indigoinflux -execute 'select * from device_changes'
 # no error, no output - after all, I just created it
 
 indigoinflux -execute 'select * from device_changes' | wc -l
 ```
 
-Anything bigger than about 2 shows data is going in. WIN! If not, check the indigo log for hints. suspect user name/password, the port, newer versions of indigo than I wrote this for, needing a different version of the python modules, etc.
+Anything bigger than about 2 shows data is going in. WIN! If not, check the indigo log for hints, suspect user name/password, the port, newer versions of indigo than I wrote this for, needing a different version of the python modules, etc.
 
 Install Grafana on my mac
 ---

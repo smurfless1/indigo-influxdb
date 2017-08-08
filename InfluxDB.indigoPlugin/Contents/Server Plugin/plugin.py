@@ -86,11 +86,14 @@ class Plugin(indigo.PluginBase):
                     retry = 'str'
                 # float is already float
                 # now we know to try to force this field to this type forever more
-                self.adaptor.typecache['field'] = retry
-
-                newcode = '%s(%s)' % (retry, str(json_body[0]['fields'][field]))
-                #print(newcode)
-                json_body[0]['fields'][field] = eval(newcode)
+                self.adaptor.typecache[field] = retry
+                try:
+                    newcode = '%s("%s")' % (retry, str(json_body[0]['fields'][field]))
+                    #indigo.server.log(newcode)
+                    json_body[0]['fields'][field] = eval(newcode)
+                except ValueError:
+                    pass
+                    #indigo.server.log('One of the columns just will not convert to its previous type. This means the database columns are just plain wrong.')
             except ValueError:
                 if self.pluginPrefs.get(u'debug', False):
                     indigo.server.log(u'Unable to force a field to the type in Influx - a partial record was still written')

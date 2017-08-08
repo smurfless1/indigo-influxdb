@@ -136,7 +136,12 @@ class IndigoAdaptor():
         # try to honor previous complaints about column types
         for key in self.typecache.keys():
             if key in newjson.keys():
-                newjson[key] = eval( '%s(%s)' % (self.typecache[key], str(newjson[key])))
+                try:
+                    newjson[key] = eval( '%s("%s")' % (self.typecache[key], str(newjson[key])))
+                except ValueError:
+                    if self.debug:
+                        indigo.server.log('One of the columns just will not convert to the requested type. Partial record written.')
+                    pass
 
         return newjson
 
