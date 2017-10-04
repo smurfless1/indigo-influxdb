@@ -39,7 +39,9 @@ class Plugin(indigo.PluginBase):
             port=int(self.port),
             username=self.user,
             password=self.password,
-            database=self.database)
+            database=self.database,
+            ssl=self.tls,
+            verify_ssl=True)
 
         if self.pluginPrefs.get('reset', False):
             try:
@@ -111,6 +113,7 @@ class Plugin(indigo.PluginBase):
             self.user = self.pluginPrefs.get('user', 'indigo')
             self.password = self.pluginPrefs.get('password', 'indigo')
             self.database = self.pluginPrefs.get('database', 'indigo')
+            self.tls = self.pluginPrefs.get(u'tls', False)
 
             self.connect()
         except:

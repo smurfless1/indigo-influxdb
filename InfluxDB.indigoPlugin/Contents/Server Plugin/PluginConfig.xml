@@ -36,6 +36,11 @@
            tooltip="database name in influx">
         <Label>Database:</Label>
     </Field>
+    <Field id="tls"
+           type="checkbox">
+        <Label>Use TLS</Label>
+        <Description>Connect to InfluxDB with TLS (SSL)</Description>
+    </Field>
     <Field id="debug"
            type="checkbox">
         <Label>Debug to Log</Label>
